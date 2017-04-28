@@ -16,21 +16,48 @@ function cipher_form() {
   $form['shift_amount'] = array(
     '#title' => t('Shift amount'),
     '#type' => 'textfield',
-    '#description' => t('Enter an amount you want to shift your message.')
+    '#description' => t('Enter an amount you want to shift your message.'),
+    '#element_validate' => array('element_validate_integer_positive', 'element_validate_number_range'),
+    '#required' => TRUE,
   );
   $form['shift_direction'] = array(
     '#title' => t('Shift direction'),
     '#type' => 'textfield',
     '#description' => t("Enter 'left' or 'right' to select a shift direction."),
+    '#element_validate' => array('element_validate_left_right'),
+    '#required' => TRUE,
   );
   $form['input'] = array(
     '#title' => t('Message'),
     '#type' => 'textfield',
     '#description' => t('Enter a message to encrypt.'),
+    '#element_validate' => array('element_validate_message_field'),
+    '#required' => TRUE,
   );
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => 'Encrypt',
   );
   return $form;
+}
+
+function element_validate_number_range($element) {
+  $element = $element['#value'];
+  if ($element < 1 || $element > 25) {
+    form_error($element, t('Shift amount must be between 1 and 25.'));
+  }
+}
+
+function element_validate_left_right($element) {
+  $direction = strtolower($element['#value']);
+  if (!($direction == 'right' || $direction == 'left')) {
+    form_error($element, t("Shift direction must be 'left' or 'right'."));
+  }
+}
+
+function element_validate_message_field($element) {
+  $message = $element['#value'];
+  if (preg_match('/[^A-Za-z,!?\'\"\.\s\/:;]/', $message)) {
+    form_error($element, t('Your message may not contain any special characters, only letters and punctuation.'));
+  }
 }
